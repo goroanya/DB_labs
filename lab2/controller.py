@@ -38,8 +38,8 @@ class Controller:
 
     def show_init_menu(self, msg=''):
         selectionMenu = SelectionMenu(
-            TABLES_NAMES + ['Find without word', 'Find whole phrase',
-                            'Fill table  task by random data'], subtitle=msg)
+            TABLES_NAMES + ['Find text where word is not included', 'Find text by full phrase',
+                            'Fill table "department" by random data (10 items)'], title='Select the table to work with | command:', subtitle=msg)
         selectionMenu.show()
 
         index = selectionMenu.selected_option
@@ -78,7 +78,7 @@ class Controller:
     def get(self, tableName):
         try:
             condition = getInput(
-                'Enter condition (SQL) or leave empty:', tableName)
+                f'GET {tableName}\nEnter condition (SQL) or leave empty:', tableName)
             data = self.model.get(tableName, condition)
             self.view.print(data)
             pressEnter()
@@ -89,7 +89,7 @@ class Controller:
     def insert(self, tableName):
         try:
             columns, values = getInsertInput(
-                'Enter colums divided with commas, then do the same for values', tableName)
+                f"INSERT {tableName}\nEnter colums divided with commas, then do the same for values in format: ['value1', 'value2', ...]", tableName)
             self.model.insert(tableName, columns, values)
             self.show_entity_menu(tableName, 'Insert is successful!')
         except Exception as err:
@@ -98,7 +98,7 @@ class Controller:
     def delete(self, tableName):
         try:
             condition = getInput(
-                'Enter condition (SQL):', tableName)
+                f'DELETE {tableName}\n Enter condition (SQL):', tableName)
             self.model.delete(tableName, condition)
             self.show_entity_menu(tableName, 'Delete is successful')
         except Exception as err:
@@ -107,9 +107,9 @@ class Controller:
     def update(self, tableName):
         try:
             condition = getInput(
-                'Enter condition (SQL):', tableName)
+                f'UPDATE {tableName}\nEnter condition (SQL):', tableName)
             statement = getInput(
-                'Enter SQL statement where [<key>=<value>]', tableName)
+                "Enter SQL statement in format [<key>='<value>']", tableName)
 
             self.model.update(tableName, condition, statement)
             self.show_entity_menu(tableName, 'Update is successful')
@@ -119,7 +119,7 @@ class Controller:
     def search_task_by_worker_position(self, tableName):
         try:
             positions = getInput(
-                'Enter positions divided with commas:')
+                'Search task where worker\'s position are: \nEnter positions divided with commas:')
             data = self.model.search_task_by_worker_position(positions)
             self.view.print(data)
             pressEnter()
@@ -129,7 +129,7 @@ class Controller:
 
     def search_worker_by_task_is_done(self, tableName):
         try:
-            is_done = getInput('Is task done?:').lower() in [
+            is_done = getInput('Search workers that have done them tasks.\nIs task done?:').lower() in [
                 'true', 't', 'yes', 'y', '+']
             data = self.model.search_worker_by_task_is_done(is_done)
             self.view.print(data)

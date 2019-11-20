@@ -107,9 +107,10 @@ class Model:
     def fts_phrase(self, phrase):
         query = f'''
         select
-        ts_headline(project_name, query, 'StartSel=\033[94m, StopSel=\033[0m'),
-        ts_headline(task_name, query, 'StartSel=\033[94m, StopSel=\033[0m'),
-        ts_headline(task_description, query, 'StartSel=\033[94m, StopSel=\033[0m')l
+        ts_headline(project_name, query, 'StartSel=\033[94m, StopSel=\033[0m') as project_name,
+        ts_headline(task_name, query, 'StartSel=\033[94m, StopSel=\033[0m') as task_name,
+        ts_headline(task_description, query, 'StartSel=\033[94m, StopSel=\033[0m') as task_description
+    
         from (
         select
             p.name as project_name,
