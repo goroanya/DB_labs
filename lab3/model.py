@@ -26,6 +26,7 @@ class Project(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    description = Column(String)
     budget = Column(BigInteger)
     deadline = Column(Date)
 
@@ -138,7 +139,6 @@ class Model:
         for obj in objects:
             for field_name, value in new_values.items():
                 setattr(obj, field_name, value)
-
 
     def fill_task_by_random_data(self):
         sql = """

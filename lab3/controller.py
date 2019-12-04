@@ -67,7 +67,7 @@ class Controller:
     def insert(self, table_name):
         try:
             columns, values = get_insert_input(
-                f"INSERT {table_name}\nEnter columns divided with commas, then do the same for values in format: ['value1', 'value2', ...]",
+                f"INSERT {table_name}\nEnter columns divided with commas, then do the same for values in format: [value1, value2, ...]",
                 table_name)
             self.model.insert(table_name, columns, values)
             self.show_entity_menu(table_name, 'Insert is successful!')
@@ -88,7 +88,7 @@ class Controller:
             condition = get_input(
                 f'UPDATE {table_name}\nEnter condition (SQL):', table_name)
             statement = get_input(
-                "Enter SQL statement in format [<key>='<value>']", table_name)
+                "Enter SQL statement in format [<key>=<value>]", table_name)
 
             self.model.update(table_name, condition, statement)
             self.show_entity_menu(table_name, 'Update is successful')
