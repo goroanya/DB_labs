@@ -11,7 +11,6 @@ class Department(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    number_of_workers = Column(Integer)
     manager = Column(String)
 
     workers = relationship('Worker')
@@ -114,6 +113,7 @@ class Model:
         pairs = dict(zip(columns, values))
         object_class = TABLES[tname]
         obj = object_class(**pairs)
+        session.add(obj)
 
     def commit(self):
         session.commit()
@@ -147,11 +147,10 @@ class Model:
         DECLARE
             step integer  := 0;
         BEGIN
-            LOOP EXIT WHEN step > 10;
-                INSERT INTO department (name, number_of_workers, manager)
+            LOOP EXIT WHEN step > 10000;
+                INSERT INTO department (name, manager)
                 VALUES (
                     substring(md5(random()::text), 1, 10),
-                    (random() * (50 - 1) + 1)::integer,
                     substring(md5(random()::text), 1, 15)
                 );
                 step := step + 1;
@@ -161,6 +160,6 @@ class Model:
         SELECT randomDepartments();
         """
         try:
-            self.cursor.execute(sql)
+            session.execute(sql)
         finally:
-            self.connection.commit()
+            session.commit()

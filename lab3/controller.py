@@ -5,7 +5,7 @@ from model import Model
 TABLES_NAMES = ['task', 'worker', 'project', 'department', 'worker_task']
 TABLES = {
     'task': ['id', 'deadline', 'name', 'description', 'project_id'],
-    'worker': ['id', 'fullname', 'age', 'position', 'department_id'],
+    'worker': ['id', 'full_name', 'age', 'position', 'department_id'],
     'department': ['id', 'name', 'number_of_workers', 'manager'],
     'project': ['id', 'name', 'budget', 'deadline'],
     'worker_task': ['id', 'worker_id', 'task_id']
