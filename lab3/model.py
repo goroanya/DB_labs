@@ -2,11 +2,18 @@ from sqlalchemy import create_engine, Column, String, Integer, BigInteger, Date,
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
-engine = create_engine('postgres://goroanya:goroanya99@localhost:5432/db_lab3')
+engine = create_engine('postgres://goroanya:goroanya99@localhost:5432/db_lab3', isolation_level='SERIALIZABLE')
 Base = declarative_base()
 
 
-class Department(Base):
+class Repr:
+    def __repr__(self):
+        clean_dict = self.__dict__.copy()
+        clean_dict.pop('_sa_instance_state')
+        return f'<{self.__class__.__name__}>{clean_dict})'
+
+
+class Department(Base, Repr):
     __tablename__ = 'department'
 
     id = Column(Integer, primary_key=True)
@@ -21,12 +28,11 @@ class Department(Base):
         self.manager = manager
 
 
-class Project(Base):
+class Project(Base, Repr):
     __tablename__ = 'project'
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    description = Column(String)
     budget = Column(BigInteger)
     deadline = Column(Date)
 
@@ -38,7 +44,7 @@ class Project(Base):
         self.deadline = deadline
 
 
-class Worker(Base):
+class Worker(Base, Repr):
     __tablename__ = 'worker'
 
     id = Column(Integer, primary_key=True)
@@ -56,7 +62,7 @@ class Worker(Base):
         self.department_id = department_id
 
 
-class Task(Base):
+class Task(Base, Repr):
     __tablename__ = 'task'
 
     id = Column(Integer, primary_key=True)
@@ -74,7 +80,7 @@ class Task(Base):
         self.project_id = project_id
 
 
-class WorkerTask(Base):
+class WorkerTask(Base, Repr):
     __tablename__ = 'worker_task'
 
     id = Column(Integer, primary_key=True)
@@ -107,6 +113,20 @@ class Model:
             objects = objects.filter(field == value)
         return objects
 
+    def get(self, tname, condition):
+
+        object_class = TABLES[tname]
+        objects = session.query(object_class)
+
+        if condition:
+            try:
+                pairs = self.pairs_from_str(condition)
+            except Exception as err:
+                raise Exception('Incorrect input')
+            objects = self.filter_by_pairs(objects, pairs, object_class)
+
+        return list(objects)
+
     def insert(self, tname, columns, values):
         columns = [c.strip() for c in columns.split(',')]
         values = [v.strip() for v in values.split(',')]
@@ -114,13 +134,17 @@ class Model:
         pairs = dict(zip(columns, values))
         object_class = TABLES[tname]
         obj = object_class(**pairs)
+
         session.add(obj)
 
     def commit(self):
         session.commit()
 
     def delete(self, tname, condition):
-        pairs = self.pairs_from_str(condition)
+        try:
+            pairs = self.pairs_from_str(condition)
+        except Exception as err:
+            raise Exception('Incorrect input')
         object_class = TABLES[tname]
 
         objects = session.query(object_class)
@@ -129,8 +153,12 @@ class Model:
         objects.delete()
 
     def update(self, tname, condition, statement):
-        pairs = self.pairs_from_str(condition)
-        new_values = self.pairs_from_str(statement)
+        try:
+            pairs = self.pairs_from_str(condition)
+            new_values = self.pairs_from_str(statement)
+        except Exception as err:
+            raise Exception('Incorrect input')
+
         object_class = TABLES[tname]
 
         objects = session.query(object_class)
@@ -140,25 +168,25 @@ class Model:
             for field_name, value in new_values.items():
                 setattr(obj, field_name, value)
 
-    def fill_task_by_random_data(self):
+    def fill_department_by_random_data():
         sql = """
-        CREATE OR REPLACE FUNCTION randomDepartments()
-            RETURNS void AS $$
-        DECLARE
-            step integer  := 0;
-        BEGIN
-            LOOP EXIT WHEN step > 10000;
-                INSERT INTO department (name, manager)
-                VALUES (
-                    substring(md5(random()::text), 1, 10),
-                    substring(md5(random()::text), 1, 15)
-                );
-                step := step + 1;
-            END LOOP ;
-        END;
-        $$ LANGUAGE PLPGSQL;
-        SELECT randomDepartments();
-        """
+            CREATE OR REPLACE FUNCTION randomDepartments()
+                RETURNS void AS $$
+            DECLARE
+                step integer  := 0;
+            BEGIN
+                LOOP EXIT WHEN step > 10000;
+                    INSERT INTO department (name, manager)
+                    VALUES (
+                        substring(md5(random()::text), 1, 10),
+                        substring(md5(random()::text), 1, 15)
+                    );
+                    step := step + 1;
+                END LOOP ;
+            END;
+            $$ LANGUAGE PLPGSQL;
+            SELECT randomDepartments();
+            """
         try:
             session.execute(sql)
         finally:

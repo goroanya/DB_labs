@@ -1,6 +1,8 @@
 from consolemenu import SelectionMenu
 
 from model import Model
+from view import View
+
 
 TABLES_NAMES = ['task', 'worker', 'project', 'department', 'worker_task']
 TABLES = {
@@ -32,10 +34,11 @@ def press_enter():
 class Controller:
     def __init__(self):
         self.model = Model()
+        self.view = View()
 
     def show_init_menu(self, msg=''):
         selection_menu = SelectionMenu(
-            TABLES_NAMES + ['Fill table "department" by random data (10 items)', 'Commit'],
+            TABLES_NAMES + ['Fill table "department" by random data (10 000 items)', 'Commit'],
             title='Select the table to work with | command:', subtitle=msg)
         selection_menu.show()
 
@@ -52,8 +55,8 @@ class Controller:
             print('Bye, have a beautiful day!')
 
     def show_entity_menu(self, table_name, msg=''):
-        options = ['Delete', 'Update', 'Insert']
-        functions = [self.delete, self.update, self.insert]
+        options = ['Get', 'Delete', 'Update', 'Insert']
+        functions = [self.get, self.delete, self.update, self.insert]
 
         selection_menu = SelectionMenu(options, f'Name of table: {table_name}',
                                        exit_option_text='Back', subtitle=msg)
@@ -63,6 +66,17 @@ class Controller:
             function(table_name)
         except IndexError:
             self.show_init_menu()
+
+    def get(self, table_name):
+        try:
+            condition = get_input(
+                f'GET {table_name}\nEnter condition (SQL) or leave empty:', table_name)
+            data = self.model.get(table_name, condition)
+            self.view.print_entities(table_name, data)
+            press_enter()
+            self.show_entity_menu(table_name)
+        except Exception as err:
+            self.show_entity_menu(table_name, str(err))
 
     def insert(self, table_name):
         try:
@@ -97,8 +111,7 @@ class Controller:
 
     def fill_by_random(self):
         try:
-            self.model.fill_task_by_random_data()
-            self.show_init_menu('Generated successfully')
-
+            self.model.fill_department_by_random_data()
+            self.show_init_menu('10 000 departments are generated successfully')
         except Exception as err:
             self.show_init_menu(str(err))
